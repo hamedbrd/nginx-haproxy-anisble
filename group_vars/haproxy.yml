@@ -1,0 +1,77 @@
+---
+
+# HAProxy: Global stats definition
+haproxy_stats_host: 127.0.0.1
+haproxy_stats_pass: haproxy
+haproxy_stats_port: 1936
+haproxy_stats_uri: /
+haproxy_stats_user: haproxy
+
+# HAProxy
+haproxy_version: 1.8
+haproxy_ppa: deb http://haproxy.debian.net stretch-backports-1.8 main
+
+haproxy_global_maxconn: 200000
+haproxy_global_nbproc: 1
+haproxy_global_nbthread: 22
+
+haproxy_global_option:
+  - cpu-map auto:1/1-22 0-21
+
+haproxy_defaults_mode: http
+
+haproxy_defaults_timeout:
+  - type: client
+    timeout: 6s
+  - type: connect
+    timeout: 3s
+  - type: server
+    timeout: 6s
+
+haproxy_listen:
+  - name: stats
+    description: Statistics
+    bind:
+      - listen: "{{ haproxy_stats_host }}:{{ haproxy_stats_port}}"
+    mode: http
+    stats:
+      enable: true
+      refresh: 30s
+      uri: "{{ haproxy_stats_uri }}"
+      options:
+        - hide-version
+        - show-node
+      admin: if TRUE
+      auth:
+        - user: "{{ haproxy_stats_user }}"
+          passwd: "{{ haproxy_stats_pass }}"
+
+haproxy_frontend:
+  - name: api_avalanche
+    mode: http
+    bind:
+      - listen: 0.0.0.0:80
+    option:
+      - forwardfor except 127.0.0.1
+    default_backend: bk_api_avalanche
+
+haproxy_backend:
+  - name: bk_api_avalanche
+    mode: http
+    option:
+      - httpchk GET /
+    maxconn: 200000
+    balance: roundrobin
+    server:
+      - name: ws_1
+        listen: 172.20.0.21:80
+        param:
+          - check
+      - name: ws_2
+        listen: 172.20.0.22:80
+        param:
+          - check
+      - name: ws_3
+        listen: 172.20.0.23:80
+        param:
+          - check

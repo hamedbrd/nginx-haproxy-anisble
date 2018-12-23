@@ -1,0 +1,10 @@
+---
+- hosts: nginx
+  become: true
+  roles:
+    - { role: php-application }
+
+- hosts: haproxy
+  become: true
+  roles:
+    - { role: krzyzakp.haproxy}

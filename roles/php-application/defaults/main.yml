@@ -1,0 +1,52 @@
+---
+
+# Custom Repos
+php_app_custom_repos:
+  - ppa:ondrej/php
+  - ppa:chris-lea/redis-server
+
+# Known hosts
+php_app_known_hosts:
+  - github.com
+  - gitlab.snapp.ir
+
+# User info
+php_app_user: forge
+
+# Redis instances (list of dicts)
+php_app_redis_instances: []
+php_app_redis_version: 4.0.11
+php_app_redis_checksum: sha256:fc53e73ae7586bcdacb4b63875d1ff04f68c5474c1ddeda78f00e5ae2eed1bbb
+php_app_redis_maxclients: 100000
+
+# Sudo rules
+php_app_sudo_rules:
+  - "{{ php_app_user }} ALL= NOPASSWD: /bin/systemctl reload php{{ php_version }}-fpm.service"
+  - "{{ php_app_user }} ALL= NOPASSWD: /usr/sbin/service php{{ php_version }}-fpm reload"
+
+# PHP
+php_app_php_packages:
+  - php-common
+  - php-redis
+  - php-igbinary
+  - php-msgpack
+  - php-pear
+  - "php{{ php_version }}"
+  - "php{{ php_version }}-bcmath"
+  - "php{{ php_version }}-cli"
+  - "php{{ php_version }}-common"
+  - "php{{ php_version }}-curl"
+  - "php{{ php_version }}-dev"
+  - "php{{ php_version }}-fpm"
+  - "php{{ php_version }}-gd"
+  - "php{{ php_version }}-imap"
+  - "php{{ php_version }}-intl"
+  - "php{{ php_version }}-json"
+  - "php{{ php_version }}-mbstring"
+  - "php{{ php_version }}-mysql"
+  - "php{{ php_version }}-opcache"
+  - "php{{ php_version }}-readline"
+  - "php{{ php_version }}-soap"
+  - "php{{ php_version }}-sqlite3"
+  - "php{{ php_version }}-xml"
+  - "php{{ php_version }}-zip"

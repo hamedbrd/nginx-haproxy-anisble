@@ -1,0 +1,22 @@
+---
+
+# From Github
+- src: https://github.com/geerlingguy/ansible-role-nginx.git
+  version: v2.19
+  name: geerlingguy.nginx
+
+- src: https://github.com/nickhammond/ansible-logrotate.git
+  version: v0.0.5
+  name: nickhammond.logrotate
+
+- src: https://github.com/mrlesmithjr/ansible-netdata
+  version: master
+  name: mrlesmithjr.netdata
+
+- src: https://github.com/krzyzakp/ansible-haproxy.git
+  version: master
+  name: krzyzakp.haproxy
+
+- src: https://github.com/tcomerma/ansible-keepalived
+  version: master
+  name: keepalived

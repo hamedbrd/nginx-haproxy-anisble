@@ -1,0 +1,10 @@
+[all]
+
+[nginx]
+web01 ansible_host=172.20.0.21
+web02 ansible_host=172.20.0.22
+web03 ansible_host=172.20.0.23
+
+
+[haproxy]
+haproxy ansible_host=172.20.0.24
