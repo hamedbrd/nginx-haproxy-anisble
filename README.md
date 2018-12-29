@@ -37,6 +37,9 @@ If you want to change the configuration, you have to change the `group_vars/ngin
 We use this role `https://github.com/krzyzakp/ansible-haproxy.git` in order to have a load balancer which we put 3 applications nodes behind its backend and it will balance the load by roundrobin and also there is health check to check if a node is healthy then send traffic on that node.
 
 
+### How to add a new node behind load balancer
+
+At first for provisioning a new node, you have to run  `php-application` role and after that in `group_vars/haproxy.yml` add a new backend and run `haproxy` role on your load balancer mashine.
 
 ## How to have an organized and mutli stage playbook
 The following section shows one of many possible ways to organize playbook content.
