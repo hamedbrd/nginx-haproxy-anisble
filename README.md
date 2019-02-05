@@ -15,7 +15,7 @@ In this ansible we are using two different roles
 - haproxy
 
 
-### php-application
+### application
 
 This role is for php application provisioning,  for this job we call some different roles nginx, php, composer and some other configurations which you should have in order to run a php application.
 

@@ -1,0 +1,179 @@
+---
+
+# PHP + FPM
+php_version: "{{ php_app_php_version | mandatory }}"
+php_packages_state: present
+php_install_recommends: yes
+php_enable_php_fpm: true
+php_fpm_listen: "/var/run/php/php{{ php_version }}-fpm.sock"
+php_fpm_daemon: "php{{ php_version }}-fpm"
+php_fpm_conf_path: "/etc/php/{{ php_version }}/fpm"
+php_fpm_pool_conf_path: "/etc/php/{{ php_version }}/fpm/pool.d/www.conf"
+php_conf_paths:
+  - "/etc/php/{{ php_version }}/fpm"
+  - "/etc/php/{{ php_version }}/cli"
+php_extension_conf_paths:
+  - "/etc/php/{{ php_version }}/fpm/conf.d"
+  - "/etc/php/{{ php_version }}/cli/conf.d"
+php_webserver_daemon: nginx
+php_packages: "{{ php_app_php_packages }}"
+php_packages_extra: "{{ php_app_php_extra_packages | default('') }}"
+php_use_managed_ini: true
+php_enable_apc: false
+php_fpm_pool_user: "{{ php_app_user }}"
+php_fpm_pool_group: "{{ php_app_user }}"
+php_memory_limit: "{{ php_app_php_memory_limit | default('64M') }}"
+php_error_reporting: "{{ php_app_php_error_reporting | default('E_ALL') }}"
+php_display_errors: "{{ php_app_php_display_errors | default('On') }}"
+php_date_timezone: "{{ php_app_php_date_timezone | default('UTC') }}"
+php_fpm_pm_max_children: "{{ php_app_fpm_pm_max_children | default(1000) }}"
+php_fpm_pm_start_servers: "{{ php_app_fpm_pm_start_servers | default(100) }}"
+php_fpm_pm_min_spare_servers: "{{ php_app_fpm_pm_min_spare_servers | default(50) }}"
+php_fpm_pm_max_spare_servers: "{{ php_app_fpm_pm_max_spare_servers | default(200) }}"
+php_max_execution_time: "{{ php_app_php_max_execution_time | default(30) }}"
+
+php_app_fpm_pool_params:
+  - param: pm.process_idle_timeout
+    value: "{{ php_app_fpm_pm_process_idle_timeout | default('10s') }}"
+  - param: request_terminate_timeout
+    value: "{{ php_app_fpm_request_terminate_timeout | default(60) }}"
+  - param: pm.max_requests
+    value: "{{ php_app_fpm_pm_max_requests | default(10000) }}"
+  - param: rlimit_files
+    value: "{{ php_app_fpm_rlimit_files | default(150000) }}"
+  - param: listen.backlog
+    value: "{{ php_app_fpm_listen_backlog | default(32000) }}"
+  - param: pm.status_path
+    value: /status
+  - param: ping.path
+    value: /ping
+
+php_app_ini_params:
+  - param: cgi.fix_pathinfo
+    value: !!str 0
+  - param: mail.add_x_header
+    value: !!str Off
+  - param: process_control_timeout
+    value: "{{ php_app_ini_process_control_timeout | default('10s') }}"
+
+# New Relic
+php5_newrelic_appname: "{{ php_app_newrelic_name | mandatory }}"
+php5_newrelic_config_dest: "/etc/php/{{ php_version }}/mods-available"
+
+# Nginx
+nginx_worker_rlimit_nofile: 50000
+nginx_http_params:
+  - sendfile on
+  - charset utf-8
+  - tcp_nopush on
+  - tcp_nodelay on
+  - keepalive_timeout 15
+  - keepalive_requests 100
+  - types_hash_max_size 4096
+  - server_tokens off
+  - server_names_hash_bucket_size 128
+  - reset_timedout_connection on
+  - client_body_timeout 10
+  - send_timeout 2
+  - log_format netdata '$remote_addr - $remote_user [$time_local] '
+    '"$request" $status $body_bytes_sent '
+    '$request_length $request_time '
+    '"$http_referer" "$http_user_agent"'
+  - access_log /var/log/nginx/access.log netdata
+  - error_log /var/log/nginx/error.log error
+
+nginx_events_params:
+  - "worker_connections {{ php_app_nginx_worker_connections | default(10000) }}"
+  - use epoll
+  - multi_accept on
+  - accept_mutex off
+
+nginx_snippets:
+  example:
+    - index index.html index.htm index.php
+    - location / {
+        try_files $uri $uri/ /index.php?$query_string;
+      }
+    - location = /(favicon.ico|robots.txt) {
+        access_log off;
+        log_not_found off;
+      }
+    - location ~ \.php$ {
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php{{ php_version }}-fpm.sock;
+        fastcgi_param REMOTE_ADDR $http_x_real_ip;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_param HTTPS on;
+        include fastcgi_params;
+      }
+
+nginx_configs:
+  proxy:
+    - proxy_set_header Host $http_host
+    - proxy_set_header X-Real-IP $remote_addr
+    - proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for
+    - proxy_set_header X-Forwarded-Proto $scheme
+  set_real_ip:
+    - set_real_ip_from 172.16.77.0/24
+    - set_real_ip_from 172.20.0.0/24
+    - set_real_ip_from 79.175.139.34
+    - set_real_ip_from 79.175.139.94
+    - set_real_ip_from 79.175.139.60
+
+nginx_remove_sites:
+  - default
+
+# Sysctl
+sysctl_config:
+  vm.swappiness: 1
+  net.ipv4.tcp_tw_reuse: 1
+  net.core.somaxconn: 50000
+  net.ipv4.tcp_fin_timeout: 15
+  fs.file-max: 1024000
+  fs.nr_open: 1024000
+  net.ipv4.tcp_max_tw_buckets: 1440000
+  net.ipv4.ip_local_port_range: 15000 65000
+  net.ipv4.tcp_window_scaling: 1
+  net.ipv4.tcp_adv_win_scale: 1
+  net.ipv4.tcp_max_syn_backlog: 240000
+  net.core.optmem_max: 2516582
+  net.core.netdev_max_backlog: 60000
+  net.core.netdev_budget: 1200
+  net.nf_conntrack_max: 450000
+  vm.dirty_ratio: 10
+  vm.dirty_background_ratio: 2
+
+# Limits
+limits_config:
+  root_hard:
+    domain: root
+    limit_type: hard
+    limit_item: nofile
+    value: 1024000
+  root_soft:
+    domain: root
+    limit_type: soft
+    limit_item: nofile
+    value: 1024000
+  php_app_user_hard:
+    domain: "{{ php_app_user }}"
+    limit_type: hard
+    limit_item: nofile
+    value: 1024000
+  php_app_user_soft:
+    domain: "{{ php_app_user }}"
+    limit_type: soft
+    limit_item: nofile
+    value: 1024000
+  www-data_hard:
+    domain: www-data
+    limit_type: hard
+    limit_item: nofile
+    value: 1024000
+  www-data_soft:
+    domain: www-data
+    limit_type: soft
+    limit_item: nofile
+    value: 1024000
