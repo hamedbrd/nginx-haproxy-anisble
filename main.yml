@@ -2,7 +2,7 @@
 - hosts: nginx
   become: true
   roles:
-    - { role: php-application }
+    - { role: application }
 
 - hosts: haproxy
   become: true
