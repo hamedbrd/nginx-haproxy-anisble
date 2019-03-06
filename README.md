@@ -11,7 +11,7 @@ vagrant up
  
 ## What we have in this ansible
 In this ansible we are using two different roles
-- php-application
+- application
 - haproxy
 
 
