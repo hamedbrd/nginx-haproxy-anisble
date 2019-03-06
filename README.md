@@ -28,9 +28,9 @@ This handles pretty basic stuff for new PHP app nodes:
 
 These applications block all incoming request except requests from load balancer which is haproxy in this case.we block all incoming request by `ufw`.
 
-If you want to change the configuration, you have to change the `group_vars/nginx.yml` and also there is another configuration file beside the php-application role located in this path.
+If you want to change the configuration, you have to change the `group_vars/nginx.yml` and also there is another configuration file beside the application role located in this path.
 
-``roles/php-application/vars/external_vars.yml``
+``roles/application/vars/external_vars.yml``
 
 
 ### haproxy
@@ -39,7 +39,7 @@ We use this role `https://github.com/krzyzakp/ansible-haproxy.git` in order to h
 
 ### How to add a new node behind load balancer
 
-At first for provisioning a new node, you have to run  `php-application` role and after that in `group_vars/haproxy.yml` add a new backend and run `haproxy` role on your load balancer mashine.
+At first for provisioning a new node, you have to run  `application` role and after that in `group_vars/haproxy.yml` add a new backend and run `haproxy` role on your load balancer mashine.
 
 ## How to have an organized and mutli stage playbook
 The following section shows one of many possible ways to organize playbook content.
@@ -139,31 +139,31 @@ So by above structure in inventory your `main.yml` must be look like this
 - hosts: tehran
   become: true
   roles:
-    - { role: php-application }
+    - { role: application }
     - { role: krzyzakp.haproxy}
 
 - hosts: esfahan
   become: true
   roles:
-    - { role: php-application }
+    - { role: application }
     - { role: krzyzakp.haproxy}
 
 - hosts: office1
   become: true
   roles:
-    - { role: php-application }
+    - { role: application }
     - { role: krzyzakp.haproxy}
 
 - hosts: office2
   become: true
   roles:
-     - { role: php-application }
+     - { role: application }
      - { role: krzyzakp.haproxy}
 
 - hosts: nginx
   become: true
   roles:
-    - { role: php-application }
+    - { role: application }
 
 - hosts: haproxy
   become: true
